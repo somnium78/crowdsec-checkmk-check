@@ -166,7 +166,20 @@ ls -la /usr/lib/check_mk_agent/local/crowdsec_monitoring
 
 # License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+### GPL v3 Summary
+
+- ✅ **Freedom to use** - Use the software for any purpose
+- ✅ **Freedom to study** - Examine and modify the source code  
+- ✅ **Freedom to share** - Redistribute copies
+- ✅ **Freedom to improve** - Distribute modified versions
+- ⚠️ **Copyleft** - Derivative works must also be GPL v3 licensed
+- ⚠️ **Source disclosure** - Modified versions must include source code
+
+For commercial use or integration into proprietary software, please contact the maintainer.
 
 # Changelog
 ## v1.0.0

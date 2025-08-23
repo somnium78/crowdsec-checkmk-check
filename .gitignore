@@ -1,11 +1,5 @@
 ### **.gitignore**
 
-```gitignore
-# PowerShell
-*.ps1xml
-*.psd1
-*.psm1
-
 # Logs
 *.log
 *.txt
@@ -13,6 +7,18 @@
 # Temporary files
 *.tmp
 *.temp
+*.diff
+*~
+
+# Test files
+test_*
+*_test.ps1
+debug_*
+
+# Backup files
+*.bak
+*.backup
+*.save
 
 # IDE files
 .vscode/
@@ -23,7 +29,3 @@
 # OS files
 .DS_Store
 Thumbs.db
-
-# Test files
-test_*
-*_test.ps1
