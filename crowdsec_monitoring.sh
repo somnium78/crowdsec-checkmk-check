@@ -1,10 +1,11 @@
 #!/bin/bash
 # CheckMK Local Plugin für CrowdSec Monitoring
-# Version 1.0 - Korrekte Unicode-Tabellen-Verarbeitung
+# Version 1.0.0
+# GitHub: https://github.com/somnium78/crowdsec_monitoring
 
 # Konfiguration
-WARN_THRESHOLD=3600
-CRIT_THRESHOLD=7200
+WARN_THRESHOLD=300    # 5 Minuten
+CRIT_THRESHOLD=900    # 15 Minuten
 CURRENT_TIME=$(date +%s)
 
 # cscli-Pfad finden
