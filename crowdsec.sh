@@ -1,6 +1,6 @@
 #!/bin/bash
 # CheckMK Local Plugin für CrowdSec Monitoring
-# Version 1.0.0
+# Version 1.1.0
 # 
 # Copyright (C) 2025 somnium78
 # 

@@ -30,13 +30,6 @@ A CheckMK local plugin to monitor CrowdSec LAPI server status, including bouncer
 | **Scenarios** | 1 | Attack pattern analysis (v1.1.0+) |
 | **Performance** | 1 | ipset and blocking efficiency (v1.1.0+) |
 
-## Requirements
-
-- CheckMK Agent installed on CrowdSec LAPI server
-- CrowdSec installed and running
-- `cscli` command available in system PATH
-- Bash shell environment
-
 ## 🔧 Quick Install
 
 ```bash
@@ -60,45 +53,38 @@ sudo systemctl restart check-mk-agent
 ```
 # 📈 Performance Metrics
 ## Bouncer Metrics
-
     last_pull: Seconds since last API pull (WARN: >300s, CRIT: >900s)
     Connection health: API connectivity status
     Type information: Bouncer variant and version
 
 # Machine Metrics
-
     heartbeat_seconds: Seconds since last heartbeat (WARN: >300s, CRIT: >900s)
     Validation status: Agent authentication state
     OS information: Platform and version details
 
 # Scenario Metrics (v1.1.0+)
-
     http_attacks: HTTP-based attack attempts
     mail_attacks: SMTP/Mail-based attack attempts
     manual_bans: Administrative interventions
 
 # Performance Metrics (v1.1.0+)
-
     ipset_count: Number of active ipset tables
     ipset_entries: Total blocked IP addresses
 
 # 🛠️ Requirements
 ## System Requirements
-
-    OS: Linux (Debian, Ubuntu, CentOS, RHEL)
-    CrowdSec: v1.4.0+ (tested with v1.6.11)
-    CheckMK Agent: Any recent version
-    Shell: bash 4.0+
+- OS: Linux (Debian, Ubuntu, CentOS, RHEL)
+- CrowdSec: v1.4.0+ (tested with v1.6.11)
+- CheckMK Agent: Any recent version
+- Shell: bash 4.0+
 
 ## Dependencies
-
-    Required: cscli, date, awk, grep, sed
-    Optional: jq (enhanced JSON parsing), ipset (performance metrics)
+- Required: cscli, date, awk, grep, sed
+- Optional: jq (enhanced JSON parsing), ipset (performance metrics)
 
 ## Permissions
-
-    cscli access: Plugin runs as root via CheckMK Agent
-    Network access: LAPI server connectivity required
+- cscli access: Plugin runs as root via CheckMK Agent
+- Network access: LAPI server connectivity required
 
 
 # 📋 Configuration
