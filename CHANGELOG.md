@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-08-23
+
+### Fixed
+- **CRITICAL**: Added missing `<<<local>>>` header for CheckMK Local Plugin compatibility
+- Plugin now correctly appears in CheckMK Service Discovery under "Local checks"
+- Fixed CheckMK Agent output format for proper service recognition
+
+### Changed
+- Improved CheckMK Local Plugin format compliance
+- Enhanced service detection reliability in CheckMK Web Interface
+
+### Technical Details
+- Added `echo '<<<local>>>'` header as first output line
+- Maintains all existing functionality and GPL v3 license header
+- No breaking changes to existing installations
+
 ## [1.0.0] - 2025-08-23
 
 ### Added

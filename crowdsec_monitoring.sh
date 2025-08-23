@@ -19,10 +19,12 @@
 #
 # GitHub: https://github.com/somnium78/crowdsec_monitoring
 
+# CheckMK Local Plugin Header
+echo '<<<local>>>'
+
 # Konfiguration
 WARN_THRESHOLD=300    # 5 Minuten
 CRIT_THRESHOLD=900    # 15 Minuten
-
 CURRENT_TIME=$(date +%s)
 
 # cscli-Pfad finden
@@ -35,8 +37,8 @@ for path in /usr/bin/cscli /usr/local/bin/cscli /bin/cscli /opt/crowdsec/bin/csc
 done
 
 if [ -z "$CSCLI_PATH" ]; then
-    echo "CRIT CrowdSec_Error - cscli not found"
-    exit 1
+    echo "2 CrowdSec_Error - cscli not found"
+    exit 0
 fi
 
 # Funktion: ISO 8601 Zeit zu Sekunden-Differenz
@@ -70,8 +72,6 @@ parse_relative_time() {
 }
 
 # Bouncer-Status prüfen
-echo "<<<crowdsec_bouncers>>>"
-
 $CSCLI_PATH bouncers list 2>/dev/null | while IFS= read -r line; do
     # Header-Zeile und Unicode-Trennlinien überspringen
     if [[ "$line" =~ ^[[:space:]]*Name || "$line" =~ ^[─-]+$ || -z "$line" ]]; then
@@ -86,39 +86,37 @@ $CSCLI_PATH bouncers list 2>/dev/null | while IFS= read -r line; do
         valid=$(echo "$line" | awk '{print $3}')
         timestamp=$(echo "$line" | awk '{print $4}')  # ISO-Format ist ein Feld
         type=$(echo "$line" | awk '{print $5}')
-        version=$(echo "$line" | awk '{print $6}')
 
         # Zeit-Differenz berechnen
         diff_seconds=$(parse_iso_time "$timestamp")
 
-        # Status bestimmen
+        # Status bestimmen (CheckMK Format: 0=OK, 1=WARN, 2=CRIT)
         if [ "$valid" = "✔️" ]; then
             if [ $diff_seconds -gt $CRIT_THRESHOLD ]; then
-                status="CRIT"
-                message="Last pull ${diff_seconds}s ago"
+                status="2"
+                message="CRIT - Last pull ${diff_seconds}s ago"
             elif [ $diff_seconds -gt $WARN_THRESHOLD ]; then
-                status="WARN"
-                message="Last pull ${diff_seconds}s ago"
+                status="1"
+                message="WARN - Last pull ${diff_seconds}s ago"
             else
-                status="OK"
-                message="Last pull ${diff_seconds}s ago"
+                status="0"
+                message="OK - Last pull ${diff_seconds}s ago"
             fi
         else
-            status="CRIT"
-            message="Invalid bouncer"
+            status="2"
+            message="CRIT - Invalid bouncer"
             diff_seconds=999999
         fi
 
         # Service-Name bereinigen (@ und andere Sonderzeichen)
         clean_name=$(echo "$name" | sed 's/[^a-zA-Z0-9._-]/_/g')
 
-        echo "$status CrowdSec_Bouncer_${clean_name} last_pull=${diff_seconds} $message | IP: $ip, Type: $type, Version: ${version}"
+        # CheckMK Local Check Format: STATUS SERVICE_NAME PERFDATA MESSAGE
+        echo "$status CrowdSec_Bouncer_${clean_name} last_pull=${diff_seconds};${WARN_THRESHOLD};${CRIT_THRESHOLD} $message | IP: $ip, Type: $type"
     fi
 done
 
 # Machines-Status prüfen
-echo "<<<crowdsec_machines>>>"
-
 $CSCLI_PATH machines list 2>/dev/null | while IFS= read -r line; do
     # Header-Zeile und Unicode-Trennlinien überspringen
     if [[ "$line" =~ ^[[:space:]]*Name || "$line" =~ ^[─-]+$ || -z "$line" ]]; then
@@ -130,11 +128,8 @@ $CSCLI_PATH machines list 2>/dev/null | while IFS= read -r line; do
         # Felder extrahieren (Heartbeat ist das letzte Feld)
         name=$(echo "$line" | awk '{print $1}')
         ip=$(echo "$line" | awk '{print $2}')
-        last_update=$(echo "$line" | awk '{print $3}')
         status_symbol=$(echo "$line" | awk '{print $4}')
-        version=$(echo "$line" | awk '{print $5}')
         os=$(echo "$line" | awk '{print $6}')
-        auth_type=$(echo "$line" | awk '{print $7}')
         heartbeat=$(echo "$line" | awk '{print $NF}')  # Letztes Feld = Heartbeat
 
         # Heartbeat in Sekunden umwandeln
@@ -143,38 +138,31 @@ $CSCLI_PATH machines list 2>/dev/null | while IFS= read -r line; do
         # Status bestimmen
         if [ "$status_symbol" = "✔️" ]; then
             if [ $seconds -gt $CRIT_THRESHOLD ]; then
-                status="CRIT"
-                message="Heartbeat ${heartbeat} ago"
+                status="2"
+                message="CRIT - Heartbeat ${heartbeat} ago"
             elif [ $seconds -gt $WARN_THRESHOLD ]; then
-                status="WARN"
-                message="Heartbeat ${heartbeat} ago"
+                status="1"
+                message="WARN - Heartbeat ${heartbeat} ago"
             else
-                status="OK"
-                message="Heartbeat ${heartbeat} ago"
+                status="0"
+                message="OK - Heartbeat ${heartbeat} ago"
             fi
         else
-            status="CRIT"
-            message="Not validated"
+            status="2"
+            message="CRIT - Not validated"
             seconds=999999
         fi
 
         # Service-Name bereinigen
         clean_name=$(echo "$name" | sed 's/[^a-zA-Z0-9._-]/_/g')
 
-        echo "$status CrowdSec_Machine_${clean_name} heartbeat_seconds=${seconds} $message | IP: $ip, OS: $os, Version: $version"
+        echo "$status CrowdSec_Machine_${clean_name} heartbeat_seconds=${seconds};${WARN_THRESHOLD};${CRIT_THRESHOLD} $message | IP: $ip, OS: $os"
     fi
 done
 
 # Statistiken
-echo "<<<crowdsec_stats>>>"
-
-# Decisions zählen (nur Datenzeilen mit IP-Adressen)
 DECISIONS_COUNT=$($CSCLI_PATH decisions list 2>/dev/null | grep -E "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" | grep -v "^[[:space:]]*IP" | wc -l)
-
-# Bouncers zählen (✔️ Symbol)
 BOUNCERS_COUNT=$($CSCLI_PATH bouncers list 2>/dev/null | grep -c "✔️")
-
-# Machines zählen (✔️ Symbol)
 MACHINES_COUNT=$($CSCLI_PATH machines list 2>/dev/null | grep -c "✔️")
 
-echo "OK CrowdSec_Overview active_decisions=${DECISIONS_COUNT};active_bouncers=${BOUNCERS_COUNT};active_machines=${MACHINES_COUNT} Active: ${DECISIONS_COUNT} decisions, ${BOUNCERS_COUNT} bouncers, ${MACHINES_COUNT} machines"
+echo "0 CrowdSec_Overview active_decisions=${DECISIONS_COUNT}|active_bouncers=${BOUNCERS_COUNT}|active_machines=${MACHINES_COUNT} OK - Active: ${DECISIONS_COUNT} decisions, ${BOUNCERS_COUNT} bouncers, ${MACHINES_COUNT} machines"
